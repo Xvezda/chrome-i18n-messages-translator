@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 source .env
-python3 translate.py $@
+python package/translate.py $@
 
