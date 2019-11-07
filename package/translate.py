@@ -25,11 +25,14 @@ def roundrobin(*iterables):
   "roundrobin('ABC', 'D', 'EF') --> A D E B F C"
   # Recipe credited to George Sakkis
   num_active = len(iterables)
-  nexts = itertools.cycle(iter(it).next for it in iterables)
+  if hasattr(iter([]), 'next'):
+    nexts = itertools.cycle(iter(it).next for it in iterables)
+  else:
+    nexts = itertools.cycle(iter(it).__next__ for it in iterables)
   while num_active:
     try:
-      for _next in nexts:
-        yield _next()
+      for next_ in nexts:
+        yield next_()
     except StopIteration:
       # Remove the iterator we just exhausted from the cycle.
       num_active -= 1
