@@ -82,7 +82,9 @@ class PapagoTranslator(BaseTranslator):
     }
     r = requests.post(self.API_URL, headers=self.headers, data=data)
     result = json.loads(r.text)
-    return result['message']['result'].get('translatedText')
+    if result.get('errorCode'):
+      raise Exception(result.get('errorMessage'))
+    return result.get('message').get('result').get('translatedText')
 
   def is_supported(self, src_locale, dst_locale):
     for pair in self.SUPPORT_LOCALES:
