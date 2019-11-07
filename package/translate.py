@@ -180,8 +180,6 @@ def main(argc, argv):
 
   # translator = factory.get_translator('papago')
   # papago = translator()
-  # papago.client_id = os.getenv('NAVER_CLIENT_ID')
-  # papago.client_secret = os.getenv('NAVER_CLIENT_SECRET')
 
   for messages in arr:
     handler = MessagesHandler(messages)

@@ -26,12 +26,12 @@ class PapagoTranslator(BaseTranslator):
     ('en', 'ja'), ('en', 'zh-CN'), ('en', 'zh-TW'), ('en', 'fr')
   ]
 
-  def __init__(self, client_id='', client_secret=''):
-    self._client_id = client_id or os.getenv('NAVER_CLIENT_ID')
-    self._client_secret = client_secret or os.getenv('NAVER_CLIENT_SECRET')
+  def __init__(self):
+    self._client_id = os.getenv('NAVER_CLIENT_ID')
+    self._client_secret = os.getenv('NAVER_CLIENT_SECRET')
     self._headers = {
-      'X-Naver-Client-Id': client_id,
-      'X-Naver-Client-Secret': client_secret
+      'X-Naver-Client-Id': self._client_id,
+      'X-Naver-Client-Secret': self._client_secret
     }
 
   @property
