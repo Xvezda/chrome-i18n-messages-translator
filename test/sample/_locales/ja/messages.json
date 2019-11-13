@@ -1,0 +1,12 @@
+{
+  "snake_case": {
+    "message": "クイック·ブラウン·キツネは怠け者の犬に飛び乗る。"
+  }, 
+  "foo": {
+    "message": "バー", 
+    "description": "baz"
+  }, 
+  "hello": {
+    "message": "世界"
+  }
+}

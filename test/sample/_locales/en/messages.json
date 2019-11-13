@@ -1,0 +1,12 @@
+{
+  "foo": {
+    "message": "bar",
+    "description": "baz"
+  },
+  "hello": {
+    "message": "world"
+  },
+  "snake_case": {
+    "message": "The quick brown fox jumps over the lazy dog."
+  }
+}

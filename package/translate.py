@@ -11,9 +11,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import io
 import os
 import re
 import json
+import copy
 import functools
 import itertools
 from common import BaseTranslator
@@ -42,10 +44,10 @@ def roundrobin(*iterables):
 class MessagesJson(object):
   def __init__(self, filepath='', messages={}):
     if filepath: self.filepath = filepath
-    if messages: self.messages = messages
+    if messages: self.messages = copy.deepcopy(messages)
 
   def __str__(self):
-    return json.dumps(self.messages, indent=2)
+    return json.dumps(self.messages, indent=2, ensure_ascii=False)
 
   @property
   def filepath(self):
@@ -55,8 +57,8 @@ class MessagesJson(object):
   def filepath(self, value):
     self._filepath = value
     if not os.path.isfile(value): return
-    with open(value, 'r') as f:
-      self.messages = json.loads(f.read())
+    with io.open(value, 'r', encoding='utf8') as f:
+      self.messages = json.loads(f.read(), encoding='utf-8')
     match = re.match(r'(.*)/_locales/(.*?)/messages\.json$', value)
     self.path = match.group(1)
     self.locale = match.group(2)
@@ -93,7 +95,7 @@ class MessagesJson(object):
       os.makedirs('/'.join(filepath.split('/')[:-1]))
     except:
       pass
-    with open(filepath, 'w') as f:
+    with io.open(filepath, 'w', encoding='utf8') as f:
       f.write(self.__str__())
 
 
@@ -118,18 +120,19 @@ class MessagesHandler(object):
     if not self._translator:
       raise ValueError('translator is empty')
     pattern = r'(<code\s?[^>]*?>.*?</code>|</?[^>]*?/?>)'
-    messages = self._messages_json.messages
+
     src_locale = self._messages_json.locale
-    # print('messages:', messages)
+
     for locale in target_locales:
-      for key in messages:
+      messages = copy.deepcopy(self._messages_json.messages)
+      for key in messages.keys():
         message = messages[key].get('message')
         tokens = re.findall(pattern, message, flags=re.M|re.S)
         escaped_tokens = map(re.escape, tokens)
         words = re.split('|'.join(escaped_tokens), message)
+
         translated_words = []
-        # print('tokens:', tokens)
-        # print('words:', words)
+
         for word in words:
           if not word.strip():
             result = word
@@ -140,15 +143,14 @@ class MessagesHandler(object):
               src_locale=src_locale,
               dst_locale=locale
             )
+            # print(src_locale, locale, result)
           translated_words.append(result)
         if re.match(words[0], message):
           result = roundrobin(translated_words, tokens)
         else:
           result = roundrobin(tokens, translated_words)
         translated = ''.join(list(result))
-        # print('result:', translated)
         messages[key]['message'] = translated
-        # messages[key]['message'] = 'test'
       translated_messages = MessagesJson(messages=messages)
       translated_messages.filepath = self._messages_json.filepath.replace(
         '/'+src_locale+'/messages.json',
@@ -156,7 +158,6 @@ class MessagesHandler(object):
       )
       translated_messages.locale = locale
       print(translated_messages.filepath)
-      print(translated_messages)
       translated_messages.write()
 
 
@@ -187,7 +188,9 @@ def main(argc, argv):
   for messages in arr:
     handler = MessagesHandler(messages)
     handler.translator = google
+    # handler.translator = papago
     handler.translate(target_locales=[
+      # 'ko', 'ja'
       'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
     ])
 

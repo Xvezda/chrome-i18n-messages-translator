@@ -1,0 +1,12 @@
+{
+  "snake_case": {
+    "message": "재빠른 갈색 여우가 게으른 개를 뛰어넘는다."
+  }, 
+  "foo": {
+    "message": "술집", 
+    "description": "baz"
+  }, 
+  "hello": {
+    "message": "세계"
+  }
+}
