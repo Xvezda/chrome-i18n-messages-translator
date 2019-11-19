@@ -1,0 +1,12 @@
+{
+  "foo": {
+    "message": "beinr",
+    "description": "baz"
+  },
+  "hello": {
+    "message": "wOrld"
+  },
+  "snake_case": {
+    "message": "The quichck brOwn fOX jumps Over the leinzy dOG."
+  }
+}
