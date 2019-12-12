@@ -232,8 +232,8 @@ def main(argc, argv):
     handler.translator = google
     # handler.translator = papago
     handler.translate(target_locales=[
-      'ko'
-      # 'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
+      # 'ko'
+      'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
     ])
 
 
