@@ -8,5 +8,8 @@
   },
   "snake_case": {
     "message": "The quick brown fox jumps over the lazy dog."
+  },
+  "pre_translated": {
+    "message": "This is pretranslated feature test."
   }
 }

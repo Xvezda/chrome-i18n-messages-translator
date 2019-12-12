@@ -55,8 +55,12 @@ class MessagesJson(object):
 
   @filepath.setter
   def filepath(self, value):
+    try:
+      prevpath = self._filepath
+    except AttributeError:
+      prevpath = None
     self._filepath = value
-    if not os.path.isfile(value): return
+    if prevpath or not os.path.isfile(value): return
     with io.open(value, 'r', encoding='utf8') as f:
       self.messages = json.loads(f.read(), encoding='utf-8')
     match = re.match(r'(.*)/_locales/(.*?)/messages\.json$', value)
@@ -92,7 +96,7 @@ class MessagesJson(object):
     if not filepath:
       raise ValueError('filepath is empty')
     try:
-      os.makedirs('/'.join(filepath.split('/')[:-1]))
+      os.makedirs(os.path.sep.join(filepath.split(os.path.sep)[:-1]))
     except:
       pass
     with io.open(filepath, 'w', encoding='utf8') as f:
@@ -100,11 +104,15 @@ class MessagesJson(object):
 
 
 class MessagesHandler(object):
-  def __init__(self, messages_json):
+  def __init__(self, messages_json, translated=None):
     if not isinstance(messages_json, MessagesJson):
       raise TypeError('messages is not json type')
     self._messages_json = messages_json
-    self._translated = []
+    self._translated = translated
+
+  @property
+  def locale(self):
+    return self._messages_json.locale
 
   @property
   def translator(self):
@@ -119,44 +127,58 @@ class MessagesHandler(object):
   def translate(self, target_locales):
     if not self._translator:
       raise ValueError('translator is empty')
-    pattern = r'(<code\s?[^>]*?>.*?</code>|</?[^>]*?/?>)'
+    pattern = r'(<code\s?[^>]*?>.+?</code>|</?[^>]+?/?>)'
 
-    src_locale = self._messages_json.locale
+    src_locale = self.locale
 
     for locale in target_locales:
       messages = copy.deepcopy(self._messages_json.messages)
       for key in messages.keys():
-        message = messages[key].get('message')
-        tokens = re.findall(pattern, message, flags=re.M|re.S)
-        escaped_tokens = map(re.escape, tokens)
-        words = re.split('|'.join(escaped_tokens), message)
-
-        translated_words = []
-
-        for word in words:
-          if not word.strip():
-            result = word
+        if (self._translated and self._translated[locale]
+            and key in self._translated[locale].messages.keys()):
+          messages[key]['message'] = \
+            self._translated[locale].messages[key]['message']
+        else:
+          message = messages[key].get('message')
+          tokens = re.findall(pattern, message, flags=re.M|re.S)
+          if tokens:
+            escaped_tokens = map(re.escape, tokens)
+            words = re.split('|'.join(escaped_tokens), message)
+            translated_words = []
+            for word in words:
+              if not word.strip():
+                result = word
+              else:
+                assert src_locale != locale
+                result = self.translator.translate(
+                  word,
+                  src_locale=src_locale,
+                  dst_locale=locale
+                )
+                # print(src_locale, locale, result)
+              translated_words.append(result)
+            if re.match(words[0], message):
+              result = roundrobin(translated_words, tokens)
+            else:
+              result = roundrobin(tokens, translated_words)
+            # Reassemble words
+            translated = ''.join(list(result))
           else:
-            assert src_locale != locale
             result = self.translator.translate(
-              word,
+              message,
               src_locale=src_locale,
               dst_locale=locale
             )
-            # print(src_locale, locale, result)
-          translated_words.append(result)
-        if re.match(words[0], message):
-          result = roundrobin(translated_words, tokens)
-        else:
-          result = roundrobin(tokens, translated_words)
-        translated = ''.join(list(result))
-        messages[key]['message'] = translated
-      translated_messages = MessagesJson(messages=messages)
+            translated = result
+
+          messages[key]['message'] = translated
+      translated_messages = MessagesJson()
       translated_messages.filepath = self._messages_json.filepath.replace(
         '/'+src_locale+'/messages.json',
         '/'+locale+'/messages.json'
       )
       translated_messages.locale = locale
+      translated_messages.messages = messages
       print(translated_messages.filepath)
       translated_messages.write()
 
@@ -172,8 +194,28 @@ def main_wrapper(main):
 
 @main_wrapper
 def main(argc, argv):
-  self = argv[0]
-  items = argv[1:]
+  import collections
+  import argparse
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--pre-translated', '-p',
+                      nargs='*',
+                      help='Directory path which collect pre-translated '
+                           '"messages.json" files located, messages defined '
+                           'in this directory will not be translated.')
+  parser.add_argument('source', nargs='+')
+
+  args = parser.parse_args()
+  if not args.source:
+    parser.print_help()
+    return 1
+  items = args.source
+
+  translated = collections.defaultdict(str)
+  if args.pre_translated:
+    for pre_translated in args.pre_translated:
+      translated_file = MessagesJson(filepath=pre_translated)
+      translated[translated_file.locale] = translated_file
+
   arr = []
   for item in items:
     arr.append(MessagesJson(item))
@@ -186,12 +228,12 @@ def main(argc, argv):
   # papago = translator()
 
   for messages in arr:
-    handler = MessagesHandler(messages)
+    handler = MessagesHandler(messages, translated=translated)
     handler.translator = google
     # handler.translator = papago
     handler.translate(target_locales=[
-      # 'ko', 'ja'
-      'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
+      'ko'
+      # 'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
     ])
 
 

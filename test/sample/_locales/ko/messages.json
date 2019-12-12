@@ -1,12 +1,15 @@
 {
-  "snake_case": {
-    "message": "재빠른 갈색 여우가 게으른 개를 뛰어넘는다."
-  },
   "foo": {
-    "message": "술집",
+    "message": "바",
     "description": "baz"
   },
   "hello": {
     "message": "세계"
+  },
+  "snake_case": {
+    "message": "빠른 갈색 여우는 게으른 개 위로 뛰어 넘습니다."
+  },
+  "pre_translated": {
+    "message": "이것은 그대로 보여야 한다."
   }
 }

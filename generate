@@ -2,5 +2,5 @@
 
 [ -e env/bin/activate ] && source env/bin/activate
 source .env
-python package/translate.py $@
+python pkg/translate.py $@
 

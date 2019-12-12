@@ -4,8 +4,8 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
-from package.naver_api import PapagoTranslator
-from package.google_api import GoogleTranslator
+from pkg.naver_api import PapagoTranslator
+from pkg.google_api import GoogleTranslator
 
 
 class TranslatorFactory(object):
