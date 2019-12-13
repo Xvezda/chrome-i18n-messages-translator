@@ -124,12 +124,18 @@ class MessagesHandler(object):
       raise TypeError('value is not translator')
     self._translator = value
 
+  def _translate(self, message, to_locale):
+    result = self.translator.translate(
+      message,
+      src_locale=self.locale,
+      dst_locale=to_locale
+    )
+    return result
+
   def translate(self, target_locales):
     if not self._translator:
       raise ValueError('translator is empty')
     pattern = r'(<code\s?[^>]*?>.+?</code>|</?[^>]+?/?>)'
-
-    src_locale = self.locale
 
     for locale in target_locales:
       messages = copy.deepcopy(self._messages_json.messages)
@@ -149,13 +155,7 @@ class MessagesHandler(object):
               if not word.strip():
                 result = word
               else:
-                assert src_locale != locale
-                result = self.translator.translate(
-                  word,
-                  src_locale=src_locale,
-                  dst_locale=locale
-                )
-                # print(src_locale, locale, result)
+                result = self.translate(word, to_locale=locale)
               translated_words.append(result)
             if re.match(words[0], message):
               result = roundrobin(translated_words, tokens)
@@ -164,17 +164,11 @@ class MessagesHandler(object):
             # Reassemble words
             translated = ''.join(list(result))
           else:
-            result = self.translator.translate(
-              message,
-              src_locale=src_locale,
-              dst_locale=locale
-            )
-            translated = result
-
+            translated = self._translate(message, to_locale=locale)
           messages[key]['message'] = translated
       translated_messages = MessagesJson()
       translated_messages.filepath = self._messages_json.filepath.replace(
-        '/'+src_locale+'/messages.json',
+        '/'+self.locale+'/messages.json',
         '/'+locale+'/messages.json'
       )
       translated_messages.locale = locale
@@ -232,8 +226,8 @@ def main(argc, argv):
     handler.translator = google
     # handler.translator = papago
     handler.translate(target_locales=[
-      # 'ko'
-      'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
+      'ko'
+      # 'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
     ])
 
 
