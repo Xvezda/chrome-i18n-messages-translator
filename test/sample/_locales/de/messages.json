@@ -1,12 +1,15 @@
 {
   "foo": {
-    "message": "beinr",
+    "message": "Bar",
     "description": "baz"
   },
   "hello": {
-    "message": "wOrld"
+    "message": "Welt"
   },
   "snake_case": {
-    "message": "The quichck brOwn fOX jumps Over the leinzy dOG."
+    "message": "Der schnelle braune Fuchs springt über den faulen Hund."
+  },
+  "pre_translated": {
+    "message": "Dies ist ein vorübersetzter Funktionstest."
   }
 }
