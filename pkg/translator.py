@@ -6,6 +6,7 @@
 
 from pkg.naver_api import PapagoTranslator
 from pkg.google_api import GoogleTranslator
+from pkg.kakao_api import KakaoTranslator
 
 
 class TranslatorFactory(object):
@@ -13,6 +14,10 @@ class TranslatorFactory(object):
     pass
 
   def get_translator(self, name):
-    return {'papago': PapagoTranslator, 'google': GoogleTranslator}.get(name)
+    return {
+      'papago': PapagoTranslator,
+      'google': GoogleTranslator,
+      'kakao': KakaoTranslator
+    }.get(name)
 
 
