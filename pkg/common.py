@@ -9,20 +9,18 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from abc import ABCMeta, abstractmethod
+import six
+import abc
 
-class BaseTranslator:
-  __metaclass__ = ABCMeta
-  def __init__(self):
-    pass
-
-  @abstractmethod
+@six.add_metaclass(abc.ABCMeta)
+class BaseTranslator(object):
+  @abc.abstractmethod
   def translate(self, string, src_locale, dst_locale):
     raise NotImplementedError('translate not implemented')
 
-  @abstractmethod
+  @abc.abstractmethod
   def is_supported(self, src_locale, dst_locale):
-    raise NotImplementedError('translate not implemented')
+    raise NotImplementedError('is_supported not implemented')
 
 
 
