@@ -240,10 +240,14 @@ def main(argc, argv):
   # translator = factory.get_translator('papago')
   # papago = translator()
 
+  # translator = factory.get_translator('kakao')
+  # kakao = translator()
+
   for messages in arr:
     handler = MessagesHandler(messages, translated=translated)
     handler.translator = google
     # handler.translator = papago
+    # handler.translator = kakao
     handler.translate(target_locales=[
       'ko'
       # 'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
