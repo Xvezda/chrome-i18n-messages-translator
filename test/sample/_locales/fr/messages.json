@@ -1,0 +1,15 @@
+{
+  "foo": {
+    "message": "bar",
+    "description": "baz"
+  },
+  "hello": {
+    "message": "monde"
+  },
+  "snake_case": {
+    "message": "Le renard brun rapide saute par-dessus le chien paresseux."
+  },
+  "pre_translated": {
+    "message": "Il s'agit d'un test de fonctionnalité prétraduit."
+  }
+}

@@ -1,12 +1,15 @@
 {
-  "snake_case": {
-    "message": "クイック·ブラウン·キツネは怠け者の犬に飛び乗る。"
-  },
   "foo": {
     "message": "バー",
     "description": "baz"
   },
   "hello": {
     "message": "世界"
+  },
+  "snake_case": {
+    "message": "速い茶色のキツネは怠laな犬を飛び越えます。"
+  },
+  "pre_translated": {
+    "message": "これは事前翻訳された機能テストです。"
   }
 }

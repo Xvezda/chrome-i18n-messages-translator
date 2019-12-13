@@ -60,10 +60,15 @@ class MessagesJson(object):
     except AttributeError:
       prevpath = None
     self._filepath = value
+
     if prevpath or not os.path.isfile(value): return
+
     with io.open(value, 'r', encoding='utf8') as f:
       self.messages = json.loads(f.read(), encoding='utf-8')
-    match = re.match(r'(.*)/_locales/(.*?)/messages\.json$', value)
+
+    match = re.match(
+      os.path.join(r'(.*)', '_locales', r'(.*?)', r'messages\.json$'),
+      value)
     self.path = match.group(1)
     self.locale = match.group(2)
 
@@ -124,22 +129,38 @@ class MessagesHandler(object):
       raise TypeError('value is not translator')
     self._translator = value
 
+  def _translate(self, message, to_locale):
+    result = self.translator.translate(
+      message,
+      src_locale=self.locale,
+      dst_locale=to_locale
+    )
+    return result
+
+  @staticmethod
+  def make_deepcopy(messages):
+    return copy.deepcopy(messages)
+
+  def _translated_exists(self, locale, key):
+    return (self._translated and self._translated[locale]
+            and key in self._translated[locale].messages.keys())
+
   def translate(self, target_locales):
     if not self._translator:
       raise ValueError('translator is empty')
-    pattern = r'(<code\s?[^>]*?>.+?</code>|</?[^>]+?/?>)'
-
-    src_locale = self.locale
 
     for locale in target_locales:
-      messages = copy.deepcopy(self._messages_json.messages)
+      messages = self.make_deepcopy(self._messages_json.messages)
       for key in messages.keys():
-        if (self._translated and self._translated[locale]
-            and key in self._translated[locale].messages.keys()):
+        # If pre-translated file and message key exists
+        if self._translated_exists(locale, key):
+          # Use pre-translated file
           messages[key]['message'] = \
             self._translated[locale].messages[key]['message']
         else:
           message = messages[key].get('message')
+          # Tokenize message by following pattern
+          pattern = r'(<code\s?[^>]*?>.+?</code>|</?[^>]+?/?>)'
           tokens = re.findall(pattern, message, flags=re.M|re.S)
           if tokens:
             escaped_tokens = map(re.escape, tokens)
@@ -149,38 +170,30 @@ class MessagesHandler(object):
               if not word.strip():
                 result = word
               else:
-                assert src_locale != locale
-                result = self.translator.translate(
-                  word,
-                  src_locale=src_locale,
-                  dst_locale=locale
-                )
-                # print(src_locale, locale, result)
+                result = self._translate(word, to_locale=locale)
               translated_words.append(result)
+
+            # Reassemble words
             if re.match(words[0], message):
               result = roundrobin(translated_words, tokens)
             else:
               result = roundrobin(tokens, translated_words)
-            # Reassemble words
             translated = ''.join(list(result))
           else:
-            result = self.translator.translate(
-              message,
-              src_locale=src_locale,
-              dst_locale=locale
-            )
-            translated = result
-
+            translated = self._translate(message, to_locale=locale)
           messages[key]['message'] = translated
-      translated_messages = MessagesJson()
-      translated_messages.filepath = self._messages_json.filepath.replace(
-        '/'+src_locale+'/messages.json',
-        '/'+locale+'/messages.json'
-      )
-      translated_messages.locale = locale
-      translated_messages.messages = messages
-      print(translated_messages.filepath)
-      translated_messages.write()
+      self._save(translated=messages, locale=locale)
+
+  def _save(self, translated, locale):
+    translated_messages = MessagesJson()
+    translated_messages.filepath = self._messages_json.filepath.replace(
+      '/'+self.locale+'/messages.json',
+      '/'+locale+'/messages.json'
+    )
+    translated_messages.locale = locale
+    translated_messages.messages = translated
+    if __debug__: print(translated_messages.filepath)
+    translated_messages.write()
 
 
 def main_wrapper(main):
@@ -232,8 +245,8 @@ def main(argc, argv):
     handler.translator = google
     # handler.translator = papago
     handler.translate(target_locales=[
-      # 'ko'
-      'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
+      'ko'
+      # 'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
     ])
 
 
