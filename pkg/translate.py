@@ -249,8 +249,8 @@ def main(argc, argv):
     # handler.translator = papago
     # handler.translator = kakao
     handler.translate(target_locales=[
-      'ko'
-      # 'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru'
+      #'ko'
+      'ko', 'ja', 'de', 'zh-CN', 'fr', 'ru', 'es', 'th', 'vi', 'it'
     ])
 
 
